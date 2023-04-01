@@ -1,0 +1,9 @@
+/.quarto/
+/_site/
+/_freeze/
+.Rproj.user
+.Rprofile
+.Rhistory
+renv
+.DS_Store
+*.Rproj

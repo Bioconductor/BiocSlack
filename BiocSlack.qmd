@@ -1,0 +1,88 @@
+---
+title: "Bioconductor Slack channels"
+subtitle: Public channels in [https://slack.bioconductor.org/](https://slack.bioconductor.org/)
+date: now
+format: 
+  html: 
+    grid:
+      sidebar-width: 0px
+      body-width: 2000px
+      margin-width: 0px
+      gutter-width: 1.5rem
+editor: visual
+execute:
+  message: false
+  warning: false
+  echo: false
+---
+
+```{r}
+library(slackr)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(purrr)
+library(reactable)
+```
+
+```{r}
+# Get list of all public Bioc slack channels
+
+sc <- slackr_channels(token = Sys.getenv("SLACK_TOKEN"), exclude_archived = TRUE) |>
+  filter(!is_private) |>
+  unnest(cols = c(topic, purpose), names_sep = "_") |>
+  # convert UNIX timestamp in milliseconds to date
+  mutate(created = as_date(as_datetime(created))) |>
+  select(id, name, topic_value, purpose_value, created, num_members)
+```
+
+```{r}
+# Get message history from the list of public channels
+
+sm <-
+  map_dfr(
+    .x = set_names(sc$id),
+    .f = ~ slackr_history(channel = .x, token = Sys.getenv("SLACK_TOKEN"), message_count = 100),
+    .id = "id"
+  )
+```
+
+```{r}
+# Get the latest message for each public channel
+
+sm_latest <- sm |>
+  filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) |>
+  separate(ts, c("ts_formatted", NA)) |>
+  mutate(latest = as_datetime(as.integer(ts_formatted))) |>
+  group_by(id) |>
+  slice_max(latest) |>
+  ungroup() |>
+  mutate(latest = as_date(latest))
+```
+
+```{r}
+# Add the latest message date to the channel info
+
+all <- left_join(sc, sm_latest, by = "id") |>
+  select(name.x, topic_value, purpose_value, num_members, created, latest) |>
+  rename(name = name.x, topic = topic_value, purpose = purpose_value, `no. members` = num_members, `latest message` = latest)
+```
+
+```{r}
+# Output searchable table of channel info
+
+all |>
+  reactable(
+    columns = list(
+      topic = colDef(minWidth = 300),
+      purpose = colDef(minWidth = 300)
+    ),
+    defaultSorted = "name",
+    outlined = TRUE,
+    bordered = TRUE,
+    resizable = TRUE,
+    striped = TRUE,
+    searchable = TRUE,
+    defaultPageSize = 200
+  )
+```
