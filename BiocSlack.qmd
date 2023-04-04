@@ -1,6 +1,6 @@
 ---
 title: "Bioconductor Slack channels"
-subtitle: Public channels in [https://slack.bioconductor.org/](https://slack.bioconductor.org/)
+subtitle: Public channels in [https://slack.bioconductor.org/](https://slack.bioconductor.org/). Information in table updates daily.
 date: now
 format: 
   html: 
