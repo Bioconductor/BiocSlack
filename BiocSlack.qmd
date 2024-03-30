@@ -2,6 +2,7 @@
 title: "Bioconductor Slack channels"
 subtitle: Public channels in [https://slack.bioconductor.org/](https://slack.bioconductor.org/). Information in table updates daily.
 date: now
+date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
   html: 
     grid:

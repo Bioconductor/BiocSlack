@@ -15,6 +15,10 @@ jobs:
     env:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}  
     steps:
+      - name: Set Timezone
+        run: |
+          sudo timedatectl set-timezone UTC
+        
       - name: Check out repository
         uses: actions/checkout@v4
         
