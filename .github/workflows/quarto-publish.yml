@@ -32,14 +32,13 @@ jobs:
       - name: Cache R packages
         uses: actions/cache@v3
         with:
-          path: |
-            ~/R/library
+          path: /usr/local/lib/R/site-library
           key: ${{ env.cache-version }}-${{ runner.os }}-r-${{ hashFiles('**/*.qmd', '.github/workflows/*.yml') }}
           restore-keys: ${{ env.cache-version }}-${{ runner.os }}-r-
           
       - name: Install R dependencies
         run: |
-          install.packages(c("slackr", "dplyr", "tidyr", "lubridate", "purrr", "reactable"), repos = "https://cloud.r-project.org/")
+          Rscript -e 'install.packages(c("slackr", "dplyr", "tidyr", "lubridate", "purrr", "reactable"))'
         
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
