@@ -1,6 +1,6 @@
 ---
 title: "Bioconductor Slack channels"
-subtitle: Public channels in [https://slack.bioconductor.org/](https://slack.bioconductor.org/). Information in table updates daily.
+subtitle: Check out our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/). The table below lists all public channels, updated daily. Whether you’re a beginner or an expert, you’re welcome to join the conversations and learn with us.
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -78,7 +78,8 @@ all |>
       topic = colDef(minWidth = 300),
       purpose = colDef(minWidth = 300)
     ),
-    defaultSorted = "name",
+    defaultSorted = "latest message",
+    defaultSortOrder = "desc",
     outlined = TRUE,
     bordered = TRUE,
     resizable = TRUE,
