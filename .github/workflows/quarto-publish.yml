@@ -13,29 +13,41 @@ jobs:
     permissions:
       contents: write
     env:
-        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}  
+        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+        cache-version: v1
+
     steps:
-      - name: Set Timezone
+      - name: Set timezone
         run: |
           sudo timedatectl set-timezone UTC
         
       - name: Check out repository
         uses: actions/checkout@v4
         
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Cache R packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/R/library
+          key: ${{ env.cache-version }}-${{ runner.os }}-r-${{ hashFiles('**/*.qmd', '.github/workflows/*.yml') }}
+          restore-keys: ${{ env.cache-version }}-${{ runner.os }}-r-
+          
+      - name: Install R dependencies
+        run: |
+          install.packages(c("slackr", "dplyr", "tidyr", "lubridate", "purrr", "reactable"), repos = "https://cloud.r-project.org/")
+        
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
       
-      # add software dependencies here
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
-      - name: Install R dependencies
-        run: Rscript -e 'install.packages(c("slackr", "dplyr", "tidyr", "lubridate", "purrr", "reactable"))'
-
       - name: Publish to GitHub Pages (and render)
         uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
           path: BiocSlack.qmd
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # this secret is always available for github actions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
