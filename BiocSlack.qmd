@@ -1,6 +1,6 @@
 ---
 title: "Slack channels"
-subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that spark your interest. Our table lists all public channels, updated daily at midnight UTC. It displays the date and time of the last activity - whether it's a message or a thread reply - alongside a notation indicating how recent this activity was at the time of the last update. Open to everyone interested in Bioconductor, these channels are a great place to participate and collaborate."
+subtitle: "Explore [Bioconductor](bioconductor.org) Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that spark your interest. Our table lists all public channels, updated daily at midnight UTC. It displays the date and time of the last activity - whether it's a message or a thread reply - alongside a notation indicating how recent this activity was at the time of the last update. Open to everyone interested in Bioconductor, these channels are a great place to participate and collaborate."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -83,15 +83,14 @@ sm_latest <- sm |>
     final_latest = pmax(latest, latest_reply, na.rm = TRUE), # Determine the most recent activity
     TimeDiff = difftime(now("UTC"), final_latest, units = "mins"),
     # Calculate time difference and format for display
-   `Last Activity` = paste(format(final_latest, "%Y-%m-%d %H:%M %Z"), " (", 
-                            case_when(
-                              TimeDiff < 60 ~ paste0(round(TimeDiff), " mins ago"),
-                              TimeDiff < 1440 ~ paste0(round(TimeDiff / 60), " hours ago"),
-                              TimeDiff < 43200 ~ paste0(round(TimeDiff / 1440), " days ago"),
-                              TimeDiff < 525600 ~ paste0(round(TimeDiff / 43200), " months ago"),
-                              TRUE ~ paste0(round(TimeDiff / 525600), " years ago"), 
-                            ), ")", 
-                            sep = "")
+    `Last Activity` = format(final_latest, "%Y-%m-%d %H:%M %Z"), # Timestamp of last activity
+    `Time Since Last Activity` = case_when(
+      TimeDiff < 60 ~ paste0(round(TimeDiff), " mins ago"),
+      TimeDiff < 1440 ~ paste0(round(TimeDiff / 60), " hours ago"),
+      TimeDiff < 43200 ~ paste0(round(TimeDiff / 1440), " days ago"),
+      TimeDiff < 525600 ~ paste0(round(TimeDiff / 43200), " months ago"),
+      TRUE ~ paste0(round(TimeDiff / 525600), " years ago")
+    )
   ) |>
   group_by(id) |>
   slice_max(final_latest) |>
@@ -103,7 +102,7 @@ sm_latest <- sm |>
 # Prepare final dataset for table visualisation
 
 all <- left_join(sc, sm_latest, by = "id") |>
-  select(name.x, topic_value, purpose_value, num_members, created, `Last Activity`) |>
+  select(name.x, topic_value, purpose_value, num_members, created, `Last Activity`, `Time Since Last Activity`) |>
   rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Created` = created)
 ```
 
@@ -115,9 +114,9 @@ all |>
   reactable(
     columns = list(
       Topic = colDef(minWidth = 300),
-      Description = colDef(minWidth = 300),
-      `Last Activity` = colDef(defaultSortOrder = "desc") # Enable HTML rendering for Last Activity
+      Description = colDef(minWidth = 300)
     ),
+    defaultSorted = "Last Activity", defaultSortOrder = "desc",
     outlined = TRUE,
     bordered = TRUE,
     resizable = TRUE,
