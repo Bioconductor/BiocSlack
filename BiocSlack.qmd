@@ -1,6 +1,6 @@
 ---
 title: "Slack channels"
-subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily. These channels are open to everyone interested in Bioconductor to participate and learn together."
+subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily, showing the date of the last activity, whether it's a message or thread reply. These channels are open to everyone interested in Bioconductor to participate and learn together."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -55,14 +55,21 @@ sm <-
 ```{r}
 # Get the latest message for each public channel
 
-sm_latest <- sm |>
-  filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) |>
-  separate(ts, c("ts_formatted", NA)) |>
-  mutate(latest = as_datetime(as.integer(ts_formatted))) |>
-  group_by(id) |>
-  slice_max(latest) |>
-  ungroup() |>
-  mutate(latest = as_date(latest))
+sm_latest <- sm %>%
+  filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) %>%
+  separate(ts, c("ts_formatted", NA)) %>%
+  mutate(
+    # Latest message in main channel
+    latest = as_datetime(as.integer(ts_formatted)),
+    # Latest thread reply message
+    latest_reply = as_datetime(as.integer(root$latest_reply)), 
+    # Determine the latest between the two
+    final_latest = pmax(latest, latest_reply, na.rm = TRUE)
+  ) %>%
+  group_by(id) %>%
+  slice_max(final_latest) %>%
+  ungroup() %>%
+  mutate(latest_date = as_date(final_latest))
 ```
 
 ```{r}
@@ -70,7 +77,7 @@ sm_latest <- sm |>
 
 all <- left_join(sc, sm_latest, by = "id") |>
   select(name.x, topic_value, purpose_value, num_members, created, latest) |>
-  rename(name = name.x, topic = topic_value, description = purpose_value, `no. members` = num_members, `latest message` = latest)
+  rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Last Activity` = latest)
 ```
 
 ```{r}
