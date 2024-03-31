@@ -30,18 +30,19 @@ library(reactable)
 ```
 
 ```{r}
-# Get list of all public Bioc slack channels
+# Retrieve a list of all public Bioconductor Slack channels
+# Exclude archived channels and unnest topic and purpose details
 
 sc <- slackr_channels(token = Sys.getenv("SLACK_TOKEN"), exclude_archived = TRUE) |>
   filter(!is_private) |>
   unnest(cols = c(topic, purpose), names_sep = "_") |>
-  # convert UNIX timestamp in milliseconds to date
-  mutate(created = as_date(as_datetime(created))) |>
+  mutate(created = as_date(as_datetime(created))) |> # Convert creation timestamp to readable date
   select(id, name, topic_value, purpose_value, created, num_members)
 ```
 
 ```{r}
-# Get message history from the list of public channels
+# Fetch message history for each public channel using Slack API
+# Collect data into a single dataframe for processing
 
 sm <-
   map_dfr(
@@ -52,21 +53,18 @@ sm <-
 ```
 
 ```{r}
-# Get the latest message for each public channel
+# Process message data to find the latest activity for each channel
+# Compare latest message and thread reply to determine the most recent
 
 sm_latest <- sm |>
   filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) |>
   separate(ts, c("ts_formatted", NA)) |>
   mutate(
-    # Latest message in channel
-    latest = as_datetime(as.integer(ts_formatted), tz = "UTC"),
-    # Latest thread reply message
-    latest_reply = as_datetime(as.integer(root$latest_reply), tz = "UTC"), 
-    # Determine the latest between the two
-    final_latest = pmax(latest, latest_reply, na.rm = TRUE),
-    # Calculate time difference in minutes for relative time
+    latest = as_datetime(as.integer(ts_formatted), tz = "UTC"), # Latest message timestamp
+    latest_reply = as_datetime(as.integer(root$latest_reply), tz = "UTC"), # Latest reply in a thread
+    final_latest = pmax(latest, latest_reply, na.rm = TRUE), # Determine the most recent activity
     TimeDiff = difftime(now("UTC"), final_latest, units = "mins"),
-    # Combine both precise and relative times in a single string
+    # Calculate time difference and format for display
    `Last Activity` = paste(format(final_latest, "%Y-%m-%d %H:%M %Z"), " (", 
                             case_when(
                               TimeDiff < 60 ~ paste0(round(TimeDiff), " mins ago"),
@@ -83,7 +81,8 @@ sm_latest <- sm |>
 ```
 
 ```{r}
-# Add the latest message date to the channel info
+# Combine channel information with the latest activity data
+# Prepare final dataset for table visualisation
 
 all <- left_join(sc, sm_latest, by = "id") |>
   select(name.x, topic_value, purpose_value, num_members, created, `Last Activity`) |>
@@ -91,14 +90,15 @@ all <- left_join(sc, sm_latest, by = "id") |>
 ```
 
 ```{r}
-# Output searchable table of channel info
+# Create a searchable and sortable table using Reactable
+# Configures visual aspects of the table for better readability
 
 all |>
   reactable(
     columns = list(
       Topic = colDef(minWidth = 300),
       Description = colDef(minWidth = 300),
-      `Last Activity` = colDef(html = TRUE, defaultSortOrder = "desc") # Enable HTML rendering for Last Activity
+      `Last Activity` = colDef(defaultSortOrder = "desc") # Enable HTML rendering for Last Activity
     ),
     outlined = TRUE,
     bordered = TRUE,
