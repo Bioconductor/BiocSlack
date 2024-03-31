@@ -146,4 +146,7 @@ all |>
   )
 ```
 
-[![](https://github.githubassets.com/favicon.ico)](https://github.com/mblue9/BiocSlack)
+::: {#footer}
+[![](https://github.githubassets.com/favicon.ico)](https://github.com/mblue9/BiocSlack){fig-align="center"}
+:::
+
