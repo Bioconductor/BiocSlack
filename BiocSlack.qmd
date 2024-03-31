@@ -3,7 +3,6 @@ title: "Slack channels"
 subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily. These channels are open to everyone interested in Bioconductor to participate and learn together."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
-title-block-banner: "#FFFFFF"
 format: 
   html: 
     template-partials:
@@ -81,7 +80,7 @@ all |>
   reactable(
     columns = list(
       topic = colDef(minWidth = 300),
-      purpose = colDef(minWidth = 300)
+      description = colDef(minWidth = 300)
     ),
     defaultSorted = "latest message",
     defaultSortOrder = "desc",
@@ -93,3 +92,5 @@ all |>
     defaultPageSize = 200
   )
 ```
+
+[![](https://github.githubassets.com/favicon.ico)](https://github.com/mblue9/BiocSlack)
