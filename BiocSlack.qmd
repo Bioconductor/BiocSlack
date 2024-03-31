@@ -1,10 +1,13 @@
 ---
-title: "Bioconductor Slack channels"
-subtitle: Check out our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/). The table below lists all public channels, updated daily. Whether you’re a beginner or an expert, you’re welcome to join the conversations and learn with us.
+title: "Slack channels"
+subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily. These channels are open to everyone interested in Bioconductor to participate and learn together."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
+title-block-banner: "#FFFFFF"
 format: 
   html: 
+    template-partials:
+      - title-block.html
     grid:
       sidebar-width: 0px
       body-width: 2000px
@@ -15,6 +18,8 @@ execute:
   message: false
   warning: false
   echo: false
+  cache: true
+css: styles.css
 ---
 
 ```{r}
@@ -66,7 +71,7 @@ sm_latest <- sm |>
 
 all <- left_join(sc, sm_latest, by = "id") |>
   select(name.x, topic_value, purpose_value, num_members, created, latest) |>
-  rename(name = name.x, topic = topic_value, purpose = purpose_value, `no. members` = num_members, `latest message` = latest)
+  rename(name = name.x, topic = topic_value, description = purpose_value, `no. members` = num_members, `latest message` = latest)
 ```
 
 ```{r}

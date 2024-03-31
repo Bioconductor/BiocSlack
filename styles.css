@@ -1,0 +1,38 @@
+/* Try to align style with bioconductor.org https://github.com/Bioconductor/bioconductor.org/blob/devel/documentation/Styling.md
+
+/* Import Atkinson Hyperlegible font */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&display=swap');
+
+/* Root variables for colors */
+:root {
+    --bioconductor-blue: #3792AD; /* Bioconductor blue, adjust as needed */
+    --bioconductor-light-blue: #E1F4FA; /* Lighter blue for backgrounds, adjust as needed */
+    --text-color: #333; /* Default text color */
+    --link-color: #0056b3; /* Default link color, adjust as needed */
+    --blockquote-bg: #f9f9f9; /* Blockquote background color */
+    --code-bg: #f5f5f5; /* Code block background color */
+}
+
+body {
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.logo-title-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; /* Adjust as needed */
+}
+
+.custom-title {
+    margin-top: 50px; /* Adjust as needed */
+    margin-left: 10px;
+}
+
