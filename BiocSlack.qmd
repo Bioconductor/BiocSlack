@@ -1,6 +1,6 @@
 ---
 title: "Slack channels"
-subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily at midnight UTC, and shows the date of the last activity (message or thread reply) alongside how recent the activity was at the time of the last update. These channels are open to everyone interested in Bioconductor to participate and learn together."
+subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that spark your interest. Our table lists all public channels, updated daily at midnight UTC. It displays the date and time of the last activity - whether it's a message or a thread reply - alongside a notation indicating how recent this activity was at the time of the last update. Open to everyone interested in Bioconductor, these channels are a great place to participate and collaborate."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -20,20 +20,39 @@ execute:
 css: styles.css
 ---
 
-```{r}
+```{r setup, include=FALSE}
 library(slackr)
 library(dplyr)
 library(tidyr)
 library(lubridate)
 library(purrr)
 library(reactable)
+
+# Safe wrapper for slackr_channels call with error handling
+safe_slackr_channels <- function(token) {
+  tryCatch({
+    slackr_channels(token = token, exclude_archived = TRUE)
+  }, error = function(e) {
+    message("Error fetching Slack channels: ", e$message)
+    return(NULL) # Return NULL on failure
+  })
+}
+
+# Safe wrapper for slackr_history call with error handling 
+safe_slackr_history <- function(channel_id, token) {
+  tryCatch({
+    slackr_history(channel = channel_id, token = token, message_count = 100)
+  }, error = function(e) {
+    message("Error fetching history for channel ID ", channel_id, ": ", e$message)
+    return(tibble()) # Return an empty tibble on failure
+  })
+}
 ```
 
 ```{r}
-# Retrieve a list of all public Bioconductor Slack channels
-# Exclude archived channels and unnest topic and purpose details
+# Retrieve a list of all public Bioconductor Slack channels using the safe wrapper function
 
-sc <- slackr_channels(token = Sys.getenv("SLACK_TOKEN"), exclude_archived = TRUE) |>
+sc <- safe_slackr_channels(token = Sys.getenv("SLACK_TOKEN")) |>
   filter(!is_private) |>
   unnest(cols = c(topic, purpose), names_sep = "_") |>
   mutate(created = as_date(as_datetime(created))) |> # Convert creation timestamp to readable date
@@ -41,13 +60,12 @@ sc <- slackr_channels(token = Sys.getenv("SLACK_TOKEN"), exclude_archived = TRUE
 ```
 
 ```{r}
-# Fetch message history for each public channel using Slack API
-# Collect data into a single dataframe for processing
+# Fetch message history for each public channel using the safe wrapper function
 
 sm <-
   map_dfr(
-    .x = set_names(sc$id),
-    .f = ~ slackr_history(channel = .x, token = Sys.getenv("SLACK_TOKEN"), message_count = 100),
+    .x = set_names(na.omit(sc$id)),
+    .f = ~ safe_slackr_history(.x, Sys.getenv("SLACK_TOKEN")),
     .id = "id"
   )
 ```
