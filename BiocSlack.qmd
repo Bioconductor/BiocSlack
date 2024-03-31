@@ -86,10 +86,10 @@ all <- left_join(sc, sm_latest, by = "id") |>
 all |>
   reactable(
     columns = list(
-      topic = colDef(minWidth = 300),
-      description = colDef(minWidth = 300)
+      Topic = colDef(minWidth = 300),
+      Description = colDef(minWidth = 300)
     ),
-    defaultSorted = "latest message",
+    defaultSorted = "Last Activity",
     defaultSortOrder = "desc",
     outlined = TRUE,
     bordered = TRUE,
