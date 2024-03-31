@@ -1,6 +1,6 @@
 ---
 title: "Slack channels"
-subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily, showing the date of the last activity, whether it's a message or thread reply. These channels are open to everyone interested in Bioconductor to participate and learn together."
+subtitle: "Explore our Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that interest you. Our table below lists all public channels, updated daily at midnight UTC, and shows the date of the last activity (message or thread reply) alongside how recent the activity was at the time of the last update. These channels are open to everyone interested in Bioconductor to participate and learn together."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -17,7 +17,6 @@ execute:
   message: false
   warning: false
   echo: false
-  cache: true
 css: styles.css
 ---
 
@@ -55,21 +54,31 @@ sm <-
 ```{r}
 # Get the latest message for each public channel
 
-sm_latest <- sm %>%
-  filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) %>%
-  separate(ts, c("ts_formatted", NA)) %>%
+sm_latest <- sm |>
+  filter(is.na(subtype) | subtype %in% c("thread_broadcast", "bot_message")) |>
+  separate(ts, c("ts_formatted", NA)) |>
   mutate(
-    # Latest message in main channel
+    # Latest message in channel
     latest = as_datetime(as.integer(ts_formatted), tz = "UTC"),
     # Latest thread reply message
     latest_reply = as_datetime(as.integer(root$latest_reply), tz = "UTC"), 
     # Determine the latest between the two
     final_latest = pmax(latest, latest_reply, na.rm = TRUE),
-    # Format final_latest in a human-friendly UTC format
-    `Last Activity` = format(final_latest, "%Y-%m-%d %H:%M %Z")
-  ) %>%
-  group_by(id) %>%
-  slice_max(final_latest) %>%
+    # Calculate time difference in minutes for relative time
+    TimeDiff = difftime(now("UTC"), final_latest, units = "mins"),
+    # Combine both precise and relative times in a single string
+   `Last Activity` = paste(format(final_latest, "%Y-%m-%d %H:%M %Z"), " (", 
+                            case_when(
+                              TimeDiff < 60 ~ paste0(round(TimeDiff), " mins ago"),
+                              TimeDiff < 1440 ~ paste0(round(TimeDiff / 60), " hours ago"),
+                              TimeDiff < 43200 ~ paste0(round(TimeDiff / 1440), " days ago"),
+                              TimeDiff < 525600 ~ paste0(round(TimeDiff / 43200), " months ago"),
+                              TRUE ~ paste0(round(TimeDiff / 525600), " years ago"), 
+                            ), ")", 
+                            sep = "")
+  ) |>
+  group_by(id) |>
+  slice_max(final_latest) |>
   ungroup()
 ```
 
@@ -89,7 +98,7 @@ all |>
     columns = list(
       Topic = colDef(minWidth = 300),
       Description = colDef(minWidth = 300),
-      `Last Activity` = colDef(defaultSortOrder = "desc")
+      `Last Activity` = colDef(html = TRUE, defaultSortOrder = "desc") # Enable HTML rendering for Last Activity
     ),
     outlined = TRUE,
     bordered = TRUE,
