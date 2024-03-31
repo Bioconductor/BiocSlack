@@ -94,7 +94,7 @@ sm_latest <- sm |>
     )
   ) |>
   group_by(id) |>
-  slice_max(final_latest) |>
+  slice_max(final_latest, with_ties = FALSE) |>
   ungroup()
 ```
 
@@ -108,6 +108,16 @@ all <- left_join(sc, sm_latest, by = "id") |>
 ```
 
 ```{r}
+# Determine the appropriate page size options
+page_sizes <- c(10, 25, 50, 100)
+max_rows <- nrow(all)
+if (max_rows > max(page_sizes)) {
+  # Round up the maximum number of rows to the nearest multiple of 50
+  max_rows_rounded <- ceiling(max_rows / 50) * 50
+  page_sizes <- c(page_sizes, max_rows_rounded)
+}
+
+
 # Create a searchable and sortable table using Reactable
 # Configures visual aspects of the table for better readability
 
@@ -121,9 +131,10 @@ all |>
     resizable = TRUE,
     searchable = TRUE,
     highlight = TRUE,
+    compact = TRUE,
     showPageSizeOptions = TRUE,
-    pageSizeOptions = c(10, 25, 50, 100, nrow(all)),
-    defaultPageSize = 10
+    defaultPageSize = page_sizes[1],
+    pageSizeOptions = page_sizes
   )
 ```
 
