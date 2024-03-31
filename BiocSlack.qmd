@@ -48,6 +48,9 @@ safe_slackr_history <- function(channel_id, token) {
     return(tibble()) # Return an empty tibble on failure
   })
 }
+
+# Capture the current date and time in UTC
+last_update <- with_tz(Sys.time(), "UTC")
 ```
 
 ```{r}
@@ -82,7 +85,7 @@ sm_latest <- sm |>
     latest = as_datetime(as.integer(ts_formatted), tz = "UTC"), # Latest message timestamp
     latest_reply = as_datetime(as.integer(root$latest_reply), tz = "UTC"), # Latest reply in a thread
     final_latest = pmax(latest, latest_reply, na.rm = TRUE), # Determine the most recent activity
-    TimeDiff = difftime(now("UTC"), final_latest, units = "mins"),
+    TimeDiff = difftime(last_update, final_latest, units = "mins"),
     # Calculate time difference and format for display
     `Last Activity` = format(final_latest, "%Y-%m-%d %H:%M %Z"), # Timestamp of last activity
     `Time Since Last Activity` = case_when(
@@ -106,6 +109,11 @@ all <- left_join(sc, sm_latest, by = "id") |>
   select(name.x, topic_value, purpose_value, num_members, created, `Last Activity`, `Time Since Last Activity`) |>
   rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Created` = created)
 ```
+
+
+
+[**Last Update:** `r format(last_update, "%Y-%m-%d %H:%M %Z")` - The "Last Activity" and "Time Since Last Activity" data points are calculated relative to this timestamp. This provides a snapshot of channel activities up to this moment.]{style="font-size: smaller; font-style: italic;"}
+
 
 ```{r}
 # Determine the appropriate page size options
