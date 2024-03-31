@@ -60,24 +60,25 @@ sm_latest <- sm %>%
   separate(ts, c("ts_formatted", NA)) %>%
   mutate(
     # Latest message in main channel
-    latest = as_datetime(as.integer(ts_formatted)),
+    latest = as_datetime(as.integer(ts_formatted), tz = "UTC"),
     # Latest thread reply message
-    latest_reply = as_datetime(as.integer(root$latest_reply)), 
+    latest_reply = as_datetime(as.integer(root$latest_reply), tz = "UTC"), 
     # Determine the latest between the two
-    final_latest = pmax(latest, latest_reply, na.rm = TRUE)
+    final_latest = pmax(latest, latest_reply, na.rm = TRUE),
+    # Format final_latest in a human-friendly UTC format
+    `Last Activity` = format(final_latest, "%Y-%m-%d %H:%M %Z")
   ) %>%
   group_by(id) %>%
   slice_max(final_latest) %>%
-  ungroup() %>%
-  mutate(latest_date = as_date(final_latest))
+  ungroup()
 ```
 
 ```{r}
 # Add the latest message date to the channel info
 
 all <- left_join(sc, sm_latest, by = "id") |>
-  select(name.x, topic_value, purpose_value, num_members, created, latest) |>
-  rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Last Activity` = latest)
+  select(name.x, topic_value, purpose_value, num_members, created, `Last Activity`) |>
+  rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Created` = created)
 ```
 
 ```{r}
@@ -87,10 +88,9 @@ all |>
   reactable(
     columns = list(
       Topic = colDef(minWidth = 300),
-      Description = colDef(minWidth = 300)
+      Description = colDef(minWidth = 300),
+      `Last Activity` = colDef(defaultSortOrder = "desc")
     ),
-    defaultSorted = "Last Activity",
-    defaultSortOrder = "desc",
     outlined = TRUE,
     bordered = TRUE,
     resizable = TRUE,
