@@ -1,6 +1,6 @@
 ---
 title: "Slack channels"
-subtitle: "Explore [Bioconductor](bioconductor.org) Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that spark your interest. Our table lists all public channels, updated daily at midnight UTC. It displays the date and time of the last activity - whether it's a message or a thread reply - alongside a notation indicating how recent this activity was at the time of the last update. Open to everyone interested in Bioconductor, these channels are a great place to participate and collaborate."
+subtitle: "Explore [Bioconductor](bioconductor.org) Slack channels at [https://slack.bioconductor.org/](https://slack.bioconductor.org/) and join conversations that spark your interest. Our table lists all public channels, updated daily. It displays the date and time of the last activity - whether it's a message or a thread reply - alongside a notation indicating how recent this activity was at the time of the last update. Open to everyone interested in Bioconductor, these channels are a great place to participate and collaborate."
 date: now
 date-format: "DD MMMM YYYY, HH:mm[Z]"
 format: 
@@ -110,10 +110,7 @@ all <- left_join(sc, sm_latest, by = "id") |>
   rename(Name = name.x, Topic = topic_value, Description = purpose_value, `Number of Members` = num_members, `Created` = created)
 ```
 
-
-
 [**Last Update:** `r format(last_update, "%Y-%m-%d %H:%M %Z")` - The "Last Activity" and "Time Since Last Activity" data points are calculated relative to this timestamp. This provides a snapshot of channel activities up to this moment.]{style="font-size: smaller; font-style: italic;"}
-
 
 ```{r}
 # Determine the appropriate page size options
@@ -147,6 +144,5 @@ all |>
 ```
 
 ::: {#footer}
-[![](https://github.githubassets.com/favicon.ico)](https://github.com/mblue9/BiocSlack){fig-align="center"}
+[![](https://github.githubassets.com/favicon.ico)](https://github.com/mblue9/BiocSlack)
 :::
-
