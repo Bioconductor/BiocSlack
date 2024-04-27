@@ -129,10 +129,12 @@ if (max_rows > max(page_sizes)) {
 all |>
   reactable(
     columns = list(
+      Name = colDef(minWidth = 150),
       Topic = colDef(minWidth = 300),
       Description = colDef(minWidth = 300)
     ),
     defaultSorted = "Last Activity", defaultSortOrder = "desc",
+        style = list(fontSize = "0.875rem"),
     resizable = TRUE,
     searchable = TRUE,
     highlight = TRUE,
